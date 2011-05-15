@@ -9,13 +9,6 @@ has 'redis' => (
     is         => 'ro',
     isa        => 'Hiredis::Async',
     lazy_build => 1,
-    handles => {
-        GetFd        => 'GetFd',
-        HandleRead   => 'HandleRead',
-        HandleWrite  => 'HandleWrite',
-        _Command     => 'Command',
-        BufferLength => 'BufferLength',
-    },
 );
 
 has 'read_watcher' => (
@@ -47,19 +40,21 @@ sub _build_redis {
 
 sub _build_read_watcher {
     my $self = shift;
-    my $fd = $self->GetFd;
-    return AnyEvent->io( fh => $fd, poll => 'r', cb => sub { $self->HandleRead  } );
+    my $fd = $self->redis->GetFd;
+    return AnyEvent->io( fh => $fd, poll => 'r', cb => sub {
+        $self->redis->HandleRead;
+    });
 }
 
 sub _build_write_watcher {
     my $self = shift;
-    my $fd = $self->GetFd;
+    my $fd = $self->redis->GetFd;
     return AnyEvent->io( fh => $fd, poll => 'w', cb => sub {
-        if ($self->BufferLength <= 0) {
+        if ($self->redis->BufferLength <= 0) {
             $self->clear_write_watcher;
         }
         else {
-            $self->HandleWrite;
+            $self->redis->HandleWrite;
         }
     });
 }
@@ -67,13 +62,14 @@ sub _build_write_watcher {
 sub Command {
     my ($self, $cmd, $cb) = @_;
 
-    $self->_Command($cmd, $cb);
+    $self->redis->Command($cmd, $cb);
 
     $self->write_watcher;
 }
 
 sub BUILD {
     my $self = shift;
+
     $self->redis;
     $self->read_watcher;
 }
