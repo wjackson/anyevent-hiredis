@@ -14,10 +14,10 @@ test_redis {
 
     my $done = AE::cv;
 
-    $redis->Command([qw/SET KEY VALUE/], sub {
+    $redis->command([qw/SET KEY VALUE/], sub {
         is $_[0], 'OK', 'got ok';
 
-        $redis->Command([qw/GET KEY/], sub {
+        $redis->command([qw/GET KEY/], sub {
             is $_[0], 'VALUE', 'got VALUE for KEY';
             $done->send;
         });
@@ -27,13 +27,13 @@ test_redis {
     my $cnt = 1;
     for my $e (qw(a b c)) {
 
-        $redis->Command([qw/ZADD myzset 0 /, $e], sub {
+        $redis->command([qw/ZADD myzset 0 /, $e], sub {
 
             is $_[0], 1, 'got 1';
 
             return if $cnt++ < 3; 
 
-            $redis->Command([qw/ZRANGE myzset 0 -1/], sub {
+            $redis->command([qw/ZRANGE myzset 0 -1/], sub {
                 my ($zrange) = @_;
                 is_deeply $zrange, [qw(a b c)], 'ZRANGE';
                 $done->send;
@@ -41,7 +41,7 @@ test_redis {
         }); 
     }
 
-    $redis->Command([qw/BOGUS/], sub {
+    $redis->command([qw/BOGUS/], sub {
         my ($result, $error) = @_;
 
         is $result, undef, 'got undefined result on error';
@@ -65,7 +65,7 @@ test_redis {
     # bad port is reported when the first command is run
     my $redis = AnyEvent::Hiredis->new(port => 12345);
     my $done  = AE::cv;
-    $redis->Command([qw/GET KEY/], sub { $done->send }); 
+    $redis->command([qw/GET KEY/], sub { $done->send }); 
 
     throws_ok { $done->recv } qr/Connection refused/,
         'got connection exception';

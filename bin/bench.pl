@@ -12,7 +12,7 @@ my $redis = AnyEvent::Hiredis->new;
 
 my $set; $set = sub {
     $i--;
-    $redis->Command(['SET', $key.$i, $value], $i < 0 ? $done : $set);
+    $redis->command(['SET', $key.$i, $value], $i < 0 ? $done : $set);
 };
 $set->() for 1..100;
 

@@ -59,7 +59,7 @@ sub _build_write_watcher {
     });
 }
 
-sub Command {
+sub command {
     my ($self, $cmd, $cb) = @_;
 
     $self->redis->Command($cmd, $cb);
@@ -95,14 +95,14 @@ Hiredis::Async::AnyEvent - hiredis AnyEvent client
     port => 6379,
   );
 
-  $redis->Command( [qw/SET foo bar/], sub { warn "SET!" } );
-  $redis->Command( [qw/GET foo/, sub { my $value = shift } );
+  $redis->command( [qw/SET foo bar/], sub { warn "SET!" } );
+  $redis->command( [qw/GET foo/, sub { my $value = shift } );
 
-  $redis->Command( [qw/LPUSH listkey value/] );
-  $redis->Command( [qw/LPOP listkey/], sub { my $value = shift } );
+  $redis->command( [qw/LPUSH listkey value/] );
+  $redis->command( [qw/LPOP listkey/], sub { my $value = shift } );
 
   # errors
-  $redis->Command( [qw/SOMETHING WRONG/, sub { my $error = $_[1] } );
+  $redis->command( [qw/SOMETHING WRONG/, sub { my $error = $_[1] } );
 
 =head1 DESCRIPTION
 
@@ -117,15 +117,15 @@ client library (L<https://github.com/antirez/hiredis>).
 
   my $redis = Redis->new( server => '192.168.0.1', port => '6379');
 
-=head2 Command
+=head2 command
 
-  $redis->Command( ['SET', $key, 'foo'], sub {
+  $redis->command( ['SET', $key, 'foo'], sub {
       my ($result, $error) = @_;
 
       $result; # 'OK'
   });
 
-  $redis->Command( ['GET', $key], sub {
+  $redis->command( ['GET', $key], sub {
       my ($result, $error) = @_;
 
       $result; # 'foo'
