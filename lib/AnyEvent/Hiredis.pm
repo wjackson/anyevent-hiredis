@@ -50,11 +50,11 @@ sub _build_write_watcher {
     my $self = shift;
     my $fd = $self->redis->GetFd;
     return AnyEvent->io( fh => $fd, poll => 'w', cb => sub {
-        if ($self->redis->BufferLength <= 0) {
-            $self->clear_write_watcher;
+        if ($self->redis->HasBufferedWrites) {
+            $self->redis->HandleWrite;
         }
         else {
-            $self->redis->HandleWrite;
+            $self->clear_write_watcher;
         }
     });
 }
