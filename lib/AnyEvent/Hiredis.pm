@@ -35,7 +35,14 @@ has 'port' => (
 
 sub _build_redis {
     my $self = shift;
-    return Hiredis::Async->new($self->host, $self->port);
+    my $redis; $redis = Hiredis::Async->new(
+        host => $self->host,
+        port => $self->port,
+        addRead  => sub { $self->read_watcher        if $self->has_redis },
+        delRead  => sub { $self->clear_read_watcher  if $self->has_redis },
+        addWrite => sub { $self->write_watcher       if $self->has_redis },
+        delWrite => sub { $self->clear_write_watcher if $self->has_redis },
+    );
 }
 
 sub _build_read_watcher {
@@ -50,12 +57,7 @@ sub _build_write_watcher {
     my $self = shift;
     my $fd = $self->redis->GetFd;
     return AnyEvent->io( fh => $fd, poll => 'w', cb => sub {
-        if ($self->redis->HasBufferedWrites) {
-            $self->redis->HandleWrite;
-        }
-        else {
-            $self->clear_write_watcher;
-        }
+        $self->redis->HandleWrite;
     });
 }
 
@@ -64,13 +66,6 @@ sub command {
 
     $self->redis->Command($cmd, $cb);
 
-    $self->write_watcher;
-}
-
-sub BUILD {
-    my $self = shift;
-
-    $self->redis;
     $self->read_watcher;
 }
 

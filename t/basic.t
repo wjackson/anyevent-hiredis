@@ -59,7 +59,7 @@ test_redis {
     # related errors can occur at different times.
 
     # unresolvable hostname is reported right away
-    throws_ok { AnyEvent::Hiredis->new(host => 'bogus') }
+    throws_ok { AnyEvent::Hiredis->new(host => 'bogus')->command }
         qr/Can't resolve/, 'got connection failure';
 
     # bad port is reported when the first command is run
