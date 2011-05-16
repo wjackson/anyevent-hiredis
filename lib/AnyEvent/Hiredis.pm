@@ -1,5 +1,5 @@
 package AnyEvent::Hiredis;
-# ABSTRACT: non-blocking hiredis based client
+# ABSTRACT: AnyEvent hiredis API
 use Moose;
 use namespace::autoclean;
 use Hiredis::Async;
@@ -79,15 +79,15 @@ __END__
 
 =head1 NAME
 
-Hiredis::Async::AnyEvent - hiredis AnyEvent client
+AnyEvent::Hiredis - AnyEvent hiredis API
 
 =head1 SYNOPSIS
 
-  use Hiredis::Async::AnyEvent;
+  use AnyEvent::Hiredis;
 
-  my $redis = Hiredis::Async::AnyEvent->new(
-    host => '127.0.0.1',
-    port => 6379,
+  my $redis = AnyEvent::Hiredis->new(
+      host => '127.0.0.1',
+      port => 6379,
   );
 
   $redis->command( [qw/SET foo bar/], sub { warn "SET!" } );
@@ -101,8 +101,8 @@ Hiredis::Async::AnyEvent - hiredis AnyEvent client
 
 =head1 DESCRIPTION
 
-Hiredis::Async::AnyEvent is a non-blocking Redis client that uses the hiredis C
-client library (L<https://github.com/antirez/hiredis>).
+C<AnyEvent::Hiredis> is an AnyEvent Redis API that uses the hiredis C client
+library (L<https://github.com/antirez/hiredis>).
 
 =head1 METHODS
 
@@ -113,6 +113,12 @@ client library (L<https://github.com/antirez/hiredis>).
   my $redis = Redis->new( server => '192.168.0.1', port => '6379');
 
 =head2 command
+
+C<command> takes an array ref representing a Redis command and a callback.
+When the command has completed the callback is executed and passed the result
+or error.
+
+Ex:
 
   $redis->command( ['SET', $key, 'foo'], sub {
       my ($result, $error) = @_;
@@ -127,12 +133,12 @@ client library (L<https://github.com/antirez/hiredis>).
   });
 
 If the Redis server replies with an error then C<$result> will be C<undef> and
-C<$error> will contain the redis error string.  Otherwise C<$error> will be
+C<$error> will contain the Redis error string.  Otherwise C<$error> will be
 C<undef>.
 
 =head1 REPOSITORY
 
-L<http://github.com/wjackson/hiredis-raw>
+L<http://github.com/wjackson/anyevent-hiredis>
 
 =head1 AUTHORS
 
@@ -142,4 +148,4 @@ Jonathan Rockway
 
 =head1 SEE ALSO
 
-L<Redis>, L<AnyEvent>, L<AnyEvent::Redis>
+L<Redis>, L<Hiredis::Async>, L<AnyEvent::Redis>
