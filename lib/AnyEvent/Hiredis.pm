@@ -1,75 +1,94 @@
 package AnyEvent::Hiredis;
 # ABSTRACT: AnyEvent hiredis API
-use Moose;
+use strict;
+use warnings;
 use namespace::autoclean;
 use Hiredis::Async;
 use AnyEvent;
 
-has 'redis' => (
-    is         => 'ro',
-    isa        => 'Hiredis::Async',
-    lazy_build => 1,
-);
+sub new {
+    my ($class, %args) = @_;
 
-has 'read_watcher' => (
-    is         => 'ro',
-    lazy_build => 1,
-);
+    my $self = bless {}, $class;
 
-has 'write_watcher' => (
-    is         => 'ro',
-    lazy_build => 1,
-);
+    $self->{host}  = $args{host} || '127.0.0.1';
+    $self->{port}  = $args{port} || 6379;
 
-has 'host' => (
-    is      => 'ro',
-    isa     => 'Str',
-    default => '127.0.0.1',
-);
+    $self->{redis} = $self->_connect;
 
-has 'port' => (
-    is      => 'ro',
-    isa     => 'Int',
-    default => 6379,
-);
+    return $self;
+}
 
-sub _build_redis {
-    my $self = shift;
-    my $redis; $redis = Hiredis::Async->new(
-        host => $self->host,
-        port => $self->port,
-        addRead  => sub { $self->read_watcher        if $self->has_redis },
-        delRead  => sub { $self->clear_read_watcher  if $self->has_redis },
-        addWrite => sub { $self->write_watcher       if $self->has_redis },
-        delWrite => sub { $self->clear_write_watcher if $self->has_redis },
+sub _connect {
+    my ($self) = @_;
+
+    my $redis = Hiredis::Async->new(
+        host => $self->{host},
+        port => $self->{port},
+
+        addRead  => sub { $self->_add_read_cb(@_)  },
+        delRead  => sub { $self->_del_read_cb(@_)  },
+        addWrite => sub { $self->_add_write_cb(@_) },
+        delWrite => sub { $self->_del_write_cb(@_) },
+        cleanup  => sub { $self->_cleanup_cb(@_)   },
     );
+
+    return $redis;
 }
 
-sub _build_read_watcher {
-    my $self = shift;
-    my $fd = $self->redis->GetFd;
-    return AnyEvent->io( fh => $fd, poll => 'r', cb => sub {
-        $self->redis->HandleRead;
+sub _add_read_cb {
+    my ($self, $fd) = @_;
+
+    return if defined $self->{reader};
+
+    $self->{reader} = AnyEvent->io( fh => $fd, poll => 'r', cb => sub {
+        $self->{redis}->HandleRead;
     });
+
+    return;
 }
 
-sub _build_write_watcher {
-    my $self = shift;
-    my $fd = $self->redis->GetFd;
-    return AnyEvent->io( fh => $fd, poll => 'w', cb => sub {
-        $self->redis->HandleWrite;
+sub _del_read_cb {
+    my ($self, $fd) = @_;
+
+    $self->{reader} = undef;
+
+    return;
+}
+
+sub _add_write_cb {
+    my ($self, $fd) = @_;
+
+    return if defined $self->{writer};
+
+    $self->{writer} = AnyEvent->io( fh => $fd, poll => 'w', cb => sub {
+        $self->{redis}->HandleWrite;
     });
+
+    return;
+}
+
+sub _del_write_cb {
+    my ($self, $fd) = @_;
+
+    $self->{writer} = undef;
+
+    return;
+}
+
+sub _cleanup_cb {
+    my ($self) = @_;
+
+    return;
 }
 
 sub command {
     my ($self, $cmd, $cb) = @_;
 
-    $self->redis->Command($cmd, $cb);
+    $self->{redis}->Command($cmd, $cb);
 
-    $self->read_watcher;
+    return;
 }
-
-__PACKAGE__->meta->make_immutable;
 
 1;
 
