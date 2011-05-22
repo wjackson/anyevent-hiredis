@@ -30,7 +30,6 @@ sub _connect {
         delRead  => sub { $self->_del_read_cb(@_)  },
         addWrite => sub { $self->_add_write_cb(@_) },
         delWrite => sub { $self->_del_write_cb(@_) },
-        cleanup  => sub { $self->_cleanup_cb(@_)   },
     );
 
     return $redis;
@@ -76,18 +75,20 @@ sub _del_write_cb {
     return;
 }
 
-sub _cleanup_cb {
-    my ($self) = @_;
-
-    return;
-}
-
 sub command {
     my ($self, $cmd, $cb) = @_;
 
     $self->{redis}->Command($cmd, $cb);
 
     return;
+}
+
+sub DESTROY {
+    my ($self) = @_;
+
+    $self->{writer} = undef;
+    $self->{reader} = undef;
+    $self->{redis}  = undef;
 }
 
 1;
