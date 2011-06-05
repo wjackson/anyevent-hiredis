@@ -63,17 +63,22 @@ test_redis {
     # Hiredis is lazy about connecting to the redis server so connection
     # related errors can occur at different times.
 
-    # unresolvable hostname is reported right away
+    # unresolvable hostname causes a fatal exception when command is run
     throws_ok { AnyEvent::Hiredis->new(host => 'bogus')->command }
         qr/Can't resolve/, 'got connection failure';
 
-    # bad port is reported when the first command is run
+    # bad port is reported as a command error
     my $redis = AnyEvent::Hiredis->new(port => 12345);
     my $done  = AE::cv;
-    $redis->command([qw/GET KEY/], sub { $done->send }); 
+    my ($cmd_res, $cmd_err);
+    $redis->command([qw/GET KEY/], sub {
+        ($cmd_res, $cmd_err) = @_;
+        $done->send;
+    });
+    $done->recv;
 
-    throws_ok { $done->recv } qr/Connection refused/,
-        'got connection exception';
+    like $cmd_err, qr/Connection refused/, 'got connection exception';
+    is $cmd_res, undef, 'no result on connection refused';
 }
 
 done_testing;
