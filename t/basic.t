@@ -12,8 +12,9 @@ test_redis {
 
     my $redis = AnyEvent::Hiredis->new(port => $port);
 
-    my $done = AE::cv;
+    my $done;
 
+    $done = AE::cv;
     $redis->command([qw/SET KEY VALUE/], sub {
         is $_[0], 'OK', 'got ok';
 
@@ -22,14 +23,17 @@ test_redis {
             $done->send;
         });
     }); 
+    $done->recv;
 
-
+    $done = AE::cv;
     my $cnt = 1;
     for my $e (qw(a b c)) {
 
         $redis->command([qw/ZADD myzset 0 /, $e], sub {
+            my ($res, $error) = @_;
 
-            is $_[0], 1, 'got 1';
+            is $error, undef, 'no error';
+            is $res, 1, 'got 1';
 
             return if $cnt++ < 3; 
 
@@ -40,7 +44,9 @@ test_redis {
             });
         }); 
     }
+    $done->recv;
 
+    $done = AE::cv;
     $redis->command([qw/BOGUS/], sub {
         my ($result, $error) = @_;
 
@@ -49,7 +55,6 @@ test_redis {
 
         $done->send;
     }); 
-
     $done->recv;
 };
 
