@@ -130,15 +130,13 @@ library (L<https://github.com/antirez/hiredis>).
 
   my $redis = Redis->new; # 127.0.0.1:6379
 
-  my $redis = Redis->new( server => '192.168.0.1', port => '6379');
+  my $redis = Redis->new(server => '192.168.0.1', port => '6379');
 
 =head2 command
 
 C<command> takes an array ref representing a Redis command and a callback.
 When the command has completed the callback is executed and passed the result
 or error.
-
-Ex:
 
   $redis->command( ['SET', $key, 'foo'], sub {
       my ($result, $error) = @_;
