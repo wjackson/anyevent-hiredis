@@ -144,9 +144,9 @@ See C<bin/compare.pl> for details.
 
 =head2 new
 
-  my $redis = Redis->new; # 127.0.0.1:6379
+  my $redis = AnyEvent::Hiredis->new; # 127.0.0.1:6379
 
-  my $redis = Redis->new(server => '192.168.0.1', port => '6379');
+  my $redis = AnyEvent::Hiredis->new(server => '192.168.0.1', port => '6379');
 
 =head2 command
 
