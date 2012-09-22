@@ -127,6 +127,19 @@ AnyEvent::Hiredis - AnyEvent hiredis API
 C<AnyEvent::Hiredis> is an AnyEvent Redis API that uses the hiredis C client
 library (L<https://github.com/antirez/hiredis>).
 
+=head1 PERFORMANCE
+
+One reason to consider C<AnyEvent::Hiredis> over its pure Perl counterpart
+C<AnyEvent::Redis> is performance.  Here's a head to head comparison of the two
+modules running on general purpose hardware:
+
+                       Rate     ae_redis  ae_hiredis
+    AnyEvent::Redis    7590/s   --        -89%
+    AnyEvent::Hiredis 69400/s   814%      --
+
+Rate here is the number of set operations per second achieved by each module.
+See C<bin/compare.pl> for details.
+
 =head1 METHODS
 
 =head2 new
