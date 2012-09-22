@@ -64,8 +64,8 @@ test_redis {
     # related errors can occur at different times.
 
     # unresolvable hostname causes a fatal exception when command is run
-    throws_ok { AnyEvent::Hiredis->new(host => 'bogus')->command }
-        qr/Can't resolve/, 'got connection failure';
+    dies_ok { AnyEvent::Hiredis->new(host => 'bogus')->command }
+        'got connection failure';
 
     # bad port is reported as a command error
     my $redis = AnyEvent::Hiredis->new(port => 12345);
