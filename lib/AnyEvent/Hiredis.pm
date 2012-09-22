@@ -1,4 +1,7 @@
 package AnyEvent::Hiredis;
+BEGIN {
+    $AnyEvent::Hiredis::VERSION = '0.02';
+}
 # ABSTRACT: AnyEvent hiredis API
 use strict;
 use warnings;
