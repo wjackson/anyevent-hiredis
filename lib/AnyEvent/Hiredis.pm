@@ -1,6 +1,6 @@
 package AnyEvent::Hiredis;
 BEGIN {
-    $AnyEvent::Hiredis::VERSION = '0.04';
+    $AnyEvent::Hiredis::VERSION = '0.05';
 }
 # ABSTRACT: AnyEvent hiredis API
 use strict;
