@@ -114,7 +114,7 @@ AnyEvent::Hiredis - AnyEvent hiredis API
   );
 
   $redis->command( [qw/SET foo bar/], sub { warn "SET!" } );
-  $redis->command( [qw/GET foo/, sub { my $value = shift } );
+  $redis->command( [qw/GET foo/], sub { my $value = shift } );
 
   $redis->command( [qw/LPUSH listkey value/] );
   $redis->command( [qw/LPOP listkey/], sub { my $value = shift } );
