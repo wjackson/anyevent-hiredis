@@ -2,8 +2,11 @@ use strict;
 use warnings;
 use Test::More;
 use Test::Exception;
+use POSIX qw/setlocale/;
 
 use t::Redis;
+
+setlocale( &POSIX::LC_ALL, 'C' );
 
 use ok 'AnyEvent::Hiredis';
 
